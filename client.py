@@ -108,6 +108,24 @@ while isAuthenticated == "True":
 		transactions.append(temp_transaction)
 		clientSocket.sendto(pickle.dumps(temp_transaction), (serverName, serverPort))
 		print ("Transaction Request sent!")
+  
+		# Recieve Transaction Request Status
+		isProcessed, serverAddress = clientSocket.recvfrom(2048)
+		isProcessed = isProcessed.decode()
+		if (isProcessed == "False"):
+			# Update Transaction Status from Temp (1) to Rejected (3)
+			transactions[len(transactions) - 1].status = 3
+			print ("Transfer Request was rejected. Insufficent Balance.")
+			print ("Current Balance: " + str(balance))
+		if (isProcessed == "True"):
+			# Update Transaction Status from Temp (1) to Comfired (3)
+			transactions[len(transactions) - 1].status = 2
+			print ("Transfer Request was comfired!")
+			# Update client balance
+			server_balance, serverAddress = clientSocket.recvfrom(2048)
+			balance = int(server_balance.decode())
+			print ("Current Balance: " + str(balance))
+   
 	if (menu_option == "2"):
 		user_transactions, serverAddress = clientSocket.recvfrom(2048)
 		current_balance, serverAddress = clientSocket.recvfrom(2048)

@@ -1,4 +1,5 @@
 from socket import *
+import pickle
 
 # Server User Class
 class User:
@@ -103,9 +104,12 @@ while 1:
         option = options_message.decode()
         
         if (option == "1"):
-            print()
+            print("User " + currentUser.username + " sent a transaction request.")
         if (option == "2"):
-            print()
+            print ("User " + currentUser.username + " has requested transactions list.")
+            user_transactions = pickle.dumps(currentUser.transactions)
+            serverSocket.sendto(user_transactions, clientAddress)
+            serverSocket.sendto(str(currentUser.balance).encode(), clientAddress)
         if (option == "3"):
             print ("User " + currentUser.username + " has logged out.")
             break;

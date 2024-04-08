@@ -120,10 +120,10 @@ while isAuthenticated == "True":
         transactions.append(temp_transaction)
     
     if (menu_option == "2"):
-        if (len(transactions) == 0):
-            print ("No transactions in list.")
-        for tx in transactions:
-            print(tx)
+        user_transactions, serverAddress = clientSocket.recvfrom(2048)
+        current_balance, serverAddress = clientSocket.recvfrom(2048)
+        print ("Current Balance: " + current_balance.decode() + " BTC")
+        print ("Transactions List: \n" + str(pickle.loads(user_transactions)))
         
     if (menu_option == "3"):
         print ("Quiting Program")

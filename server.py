@@ -1,5 +1,6 @@
 from socket import *
 import pickle
+from transactions import Transaction
 
 # Server User Class
 class User:
@@ -8,24 +9,7 @@ class User:
         self.password = password
         self.balance = balance
         self.transactions = transactions
-        
-class Transaction:
-    def __init__(self, id, payer, transfer_amount, payee1, received_amount_payee1, status, payee2=None, received_amount_payee2=0):
-        self.id = id
-        self.payer = payer
-        self.transfer_amount = transfer_amount
-        self.payee1 = payee1
-        self.received_amount_payee1 = received_amount_payee1
-        self.status = status
-        self.payee2 = payee2
-        self.received_amount_payee2 = received_amount_payee2
-    
-    def __str__(self):
-        return (f"TX: id = '{self.id}', payer = '{self.payer}', transfer_amount = '{self.transfer_amount}', payee1 = '{self.payee1}', received_amount_payee1 = '{self.received_amount_payee1}', payee2 = '{self.payee2}', received_amount_payee2 = '{self.received_amount_payee2}', status = '{self.status}'")
-    
-    def __repr__(self):
-        return (f"TX: id = '{self.id}', payer = '{self.payer}', transfer_amount = '{self.transfer_amount}', payee1 = '{self.payee1}', received_amount_payee1 = '{self.received_amount_payee1}', payee2 = '{self.payee2}', received_amount_payee2 = '{self.received_amount_payee2}', status = '{self.status}'")
-    
+           
 def authenticate(username, password, users):
     for index, user in enumerate(users):
         if user.username == username and user.password == password:
@@ -105,6 +89,8 @@ while 1:
         
         if (option == "1"):
             print("User " + currentUser.username + " sent a transaction request.")
+            temp_transaction, clientAddress = serverSocket.recvfrom(2048)
+            print ("Transactions Data Recived: \n" + str(pickle.loads(temp_transaction)))
         if (option == "2"):
             print ("User " + currentUser.username + " has requested transactions list.")
             user_transactions = pickle.dumps(currentUser.transactions)

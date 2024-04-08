@@ -1,23 +1,6 @@
 from socket import *
 import pickle
-
-# Transaction Class
-class Transaction:
-    def __init__(self, id, payer, transfer_amount, payee1, received_amount_payee1, status, payee2=None, received_amount_payee2=0):
-        self.id = id
-        self.payer = payer
-        self.transfer_amount = transfer_amount
-        self.payee1 = payee1
-        self.received_amount_payee1 = received_amount_payee1
-        self.status = status
-        self.payee2 = payee2
-        self.received_amount_payee2 = received_amount_payee2
-    
-    def __str__(self):
-        return (f"TX: id = '{self.id}', payer = '{self.payer}', transfer_amount = '{self.transfer_amount}', payee1 = '{self.payee1}', received_amount_payee1 = '{self.received_amount_payee1}', payee2 = '{self.payee2}', received_amount_payee2 = '{self.received_amount_payee2}', status = '{self.status}'")
-    
-    def __repr__(self):
-        return (f"TX: id = '{self.id}', payer = '{self.payer}', transfer_amount = '{self.transfer_amount}', payee1 = '{self.payee1}', received_amount_payee1 = '{self.received_amount_payee1}', payee2 = '{self.payee2}', received_amount_payee2 = '{self.received_amount_payee2}', status = '{self.status}'")
+from transactions import Transaction
 
 transactions = []
 username = "0"
@@ -114,11 +97,12 @@ while isAuthenticated == "True":
         if (len(transactions) == 0):
             id = transactionID[username]
         else:
-            id = transactions[len(transactions) - 1] + 1
+            id = transactions[len(transactions) - 1].id + 1
         
         temp_transaction = Transaction(id, username, transfer_amount, payee1, received_amount_payee1, status, payee2, received_amount_payee2)
         transactions.append(temp_transaction)
-    
+        clientSocket.sendto(pickle.dumps(temp_transaction), (serverName, serverPort))
+        print ("Transaction Request sent!")
     if (menu_option == "2"):
         user_transactions, serverAddress = clientSocket.recvfrom(2048)
         current_balance, serverAddress = clientSocket.recvfrom(2048)

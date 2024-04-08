@@ -16,12 +16,6 @@ def authenticate(username, password, users):
             return True, users[index]
     return False, User("0","0", 0, [])
 
-def storeTransactions(transactions, user):
-    comfirmed_transactions = []
-    for index, users in enumerate(transactions):
-        if (transactions[index].payer == user and transactions[index].status == 2):
-            comfirmed_transactions.append(transactions[index]) 
-
 # Users
 UserA = User("A", "A", 10, [])
 UserB = User("B", "B", 10, [])
@@ -77,8 +71,9 @@ while 1:
         
         # If Authentication was successful
         if isAuthenticated:
-            serverSocket.sendto(("Authentication Successful!\nCurrent Balance: " + str(currentUser.balance) + " BTC").encode(), clientAddress)
             serverSocket.sendto("True".encode(), clientAddress)
+            serverSocket.sendto(str(currentUser.balance).encode(), clientAddress)
+            serverSocket.sendto(("Authentication Successful!\nCurrent Balance: " + str(currentUser.balance) + " BTC").encode(), clientAddress)
             print ("User " + username_message.decode() + " is Authenticated!")
             break
     
@@ -87,16 +82,28 @@ while 1:
         options_message, clientAddress = serverSocket.recvfrom(2048)
         option = options_message.decode()
         
+        # Handle Transaction requests
         if (option == "1"):
             print("User " + currentUser.username + " sent a transaction request.")
             temp_transaction, clientAddress = serverSocket.recvfrom(2048)
             print ("Transactions Data Recived: \n" + str(pickle.loads(temp_transaction)))
+            
+            # Check if User has a sufficent balance
+            # Transfer amount cannot excede balance
+            # If balance is sufficent then update Payer, Payee1 (and Payee2) Balance
+            # In users list
+            
+            
+            
+        # Handle Transactions List requests
         if (option == "2"):
             print ("User " + currentUser.username + " has requested transactions list.")
             user_transactions = pickle.dumps(currentUser.transactions)
             serverSocket.sendto(user_transactions, clientAddress)
             serverSocket.sendto(str(currentUser.balance).encode(), clientAddress)
+        # Handle User Logout
         if (option == "3"):
+            
             print ("User " + currentUser.username + " has logged out.")
             break;
             

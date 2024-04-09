@@ -10,6 +10,9 @@ serverName = 'localhost'
 serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
+# Send Authentication Request
+clientSocket.sendto("Authentication".encode(),(serverName, serverPort))
+
 #  Authentication Flag to let user access server or prompt user to try again
 isAuthenticated = "False"
 
@@ -72,7 +75,8 @@ payee2Options = {
 	"DC": "1. A, 2. B",
 }
 
-# Program Loop
+# Menu Loop
+clientSocket.sendto("Menu".encode(),(serverName, serverPort))
 while isAuthenticated == "True":
 	print ("(1) Make a Transaction\n(2) Fetch and display the list of transactions\n(3) Quit the Program")
 	menu_option = input("Enter Number: ")

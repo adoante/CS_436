@@ -1,14 +1,8 @@
 from socket import *
 import pickle
 from transactions import Transaction
-
-# Server User Class
-class User:
-	def __init__(self, username, password, balance, transactions):
-		self.username = username
-		self.password = password
-		self.balance = balance
-		self.transactions = transactions
+from message import Message
+from user import User
 
 # Users
 UserA = User("A", "A", 10, [])
@@ -44,18 +38,10 @@ def authenticate():
 	while not isAuthenticated:
 		# Recive username as message form client user
 		username_message, clientAddress = serverSocket.recvfrom(2048)
-		
-		if (username_message.decode() == "quit"): 
-			print ("User has quit the client program.")
-			break      
 		 
 		# Recive password as message form client user
 		password_message, clientAddress = serverSocket.recvfrom(2048)
 		print ("Recived an Authentication Request from User " + username_message.decode())
-		
-		if (password_message.decode() == "quit"): 
-			print ("User has quit the client program.")
-			break
 		
 		# Authenticate User
 		for index, user in enumerate(users):
@@ -65,14 +51,22 @@ def authenticate():
 		# If Authentication Failed
 		if not isAuthenticated:
 			serverSocket.sendto("False".encode(), clientAddress)
-			serverSocket.sendto("Authentication Failed. :(\nEnter Username and Password again.\nOr Quit Program (Enter 'quit').".encode(), clientAddress)
+			serverSocket.sendto("Authentication Failed. :(".encode(), clientAddress)
 			print ("Failed to Authenticate User " + username_message.decode())
-		
+			authentication_menu_option_message, clientAddress = serverSocket.recvfrom(2048)
+			authentication_menu_option_message = authentication_menu_option_message.decode()
+			if (authentication_menu_option_message == "1"):
+				print ("Recived an Authentication Request from User " + username_message.decode())
+			if (authentication_menu_option_message == "2"):
+				print ("User " + username_message.decode() + " has quit program.")
+				break;
 		# If Authentication was successful
 		if isAuthenticated:
 			serverSocket.sendto("True".encode(), clientAddress)
-			serverSocket.sendto(str(users[userIndex[username_message.decode()]].balance).encode(), clientAddress)
 			serverSocket.sendto(("Authentication Successful!\nCurrent Balance: " + str(users[userIndex[username_message.decode()]].balance) + " BTC").encode(), clientAddress)
+			serverSocket.sendto(str(users[userIndex[username_message.decode()]].balance).encode(), clientAddress)
+			user_transactions = pickle.dumps(users[userIndex[username_message.decode()]].transactions)
+			serverSocket.sendto(user_transactions, clientAddress)
 			print ("User " + username_message.decode() + " is Authenticated!")
 			break
 	return username_message.decode()

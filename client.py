@@ -1,6 +1,7 @@
 from socket import *
 import pickle
 from transactions import Transaction
+from message import Message
 
 transactions = []
 username = "0"
@@ -23,27 +24,32 @@ while isAuthenticated == "False":
 	username_message = input("Enter Username: ")
 	username = username_message
 	clientSocket.sendto(username_message.encode(),(serverName, serverPort))
-	if (username_message == "quit"):
-		break
 
 	# Send Password to Server for Authentication
 	password_message = input("Enter Password: ")
 	clientSocket.sendto(password_message.encode(),(serverName, serverPort))
-	if (password_message == "quit"):
-		break
  
 	# Get isAuthenticated Value From Server
 	isAuthenticated_message, serverAddress = clientSocket.recvfrom(2048)
 	isAuthenticated = isAuthenticated_message.decode()
  
+	# Print authentication message to User
+	authentication_message, serverAddress = clientSocket.recvfrom(2048)
+	print (authentication_message.decode())
+ 
+	if (isAuthenticated == "False"):
+		print ("(1) Try again.\n(2) Quit.")
+		authentication_menu_option = input("Enter Number: ")
+		clientSocket.sendto(authentication_menu_option.encode(), (serverName, serverPort))
+		if (authentication_menu_option == "2"):
+			break
 	# Set Balance
 	if (isAuthenticated == "True"):
 		server_balance, serverAddress = clientSocket.recvfrom(2048)
 		balance = int(server_balance.decode())
-  
- 	# Print authentication message to User
-	authentication_message, serverAddress = clientSocket.recvfrom(2048)
-	print (authentication_message.decode())
+		server_transactions, serverAddress = clientSocket.recvfrom(2048)
+		transactions = pickle.loads(server_transactions)
+		print ("id | payer | transfer amount | payee1 | payee1 amount | payee2 | payee2 amount | status |")
 
 # Dictionaries
 transactionID = {
@@ -120,7 +126,7 @@ while isAuthenticated == "True":
 			# Update Transaction Status from Temp (1) to Rejected (3)
 			transactions[len(transactions) - 1].status = 3
 			print ("Transfer Request was rejected. Insufficent Balance.")
-			print ("Current Balance: " + str(balance))
+			print ("Current Balance: " + str(balance) + " BTC")
 		if (isProcessed == "True"):
 			# Update Transaction Status from Temp (1) to Comfired (3)
 			transactions[len(transactions) - 1].status = 2
@@ -128,13 +134,17 @@ while isAuthenticated == "True":
 			# Update client balance
 			server_balance, serverAddress = clientSocket.recvfrom(2048)
 			balance = int(server_balance.decode())
-			print ("Current Balance: " + str(balance))
+			print ("Current Balance: " + str(balance) + " BTC")
    
 	if (menu_option == "2"):
 		user_transactions, serverAddress = clientSocket.recvfrom(2048)
+		user_transactions = pickle.loads(user_transactions)
 		current_balance, serverAddress = clientSocket.recvfrom(2048)
 		print ("Current Balance: " + current_balance.decode() + " BTC")
-		print ("Transactions List: \n" + str(pickle.loads(user_transactions)))
+		print ("Transactions List: ")
+		print ("id | payer | transfer amount | payee1 | payee1 amount | payee2 | payee2 amount | status |")
+		for tx in user_transactions:
+			print (str(tx.id) + " | " + tx.payer + " | " + str(tx.transfer_amount) + " | " + tx.payee1  + " | " + str(tx.received_amount_payee1) + " | " + tx.payee2 + " | " + str(tx.received_amount_payee2) + " | " + str(tx.status) + " |")
 		
 	if (menu_option == "3"):
 		print ("Quiting Program")
